@@ -6,6 +6,8 @@ WorkingDirectory=/srv/mvg-scraper
 Environment=MVG_STATION_RANGE=-1
 Type=simple
 ExecStart=puma
+Restart=always
+RestartSec=30s
 
 [Install]
 WantedBy=multi-user.target
