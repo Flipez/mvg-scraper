@@ -117,7 +117,7 @@ MAX_CONCURRENCY.times do |thread_id|
       response_size.observe(res.body.size/1000, labels: {station: station})
       response_time.observe(res.total_time, labels: {station: station})
 
-      wait_time = ((( 60*MAX_CONCURRENCY ) / stations.size) - res.total_time)
+      wait_time = ((( 60.0 * MAX_CONCURRENCY ) / stations.size) - res.total_time)
 
       p "thread #{thread_id} request took #{res.total_time} for station #{station}, wait #{wait_time}"
       sleep([wait_time, 0].max)
