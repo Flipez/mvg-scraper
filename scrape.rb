@@ -110,6 +110,8 @@ MAX_CONCURRENCY.times do |thread_id|
     loop do
       station = queue.pop
       r = request_station(station, logger, thread_id)
+
+      
       res = r.run
 
       http_requests.increment
