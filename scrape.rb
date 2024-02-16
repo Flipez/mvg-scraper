@@ -20,13 +20,11 @@ response_codes = Prometheus::Client::Counter.new(
 response_size = Prometheus::Client::Histogram.new(
   :response_size,
   docstring: 'size of responses',
-  labels: [:station],
 )
 response_time = Prometheus::Client::Histogram.new(
   :response_time,
   docstring: 'time of responses',
-  labels: [:station],
-  buckets: Prometheus::Client::Histogram.exponential_buckets(start: 0.1, factor: 1.16, count: 20)
+  buckets: Prometheus::Client::Histogram.exponential_buckets(start: 0.1, factor: 1.2, count: 27)
 )
 
 prometheus.register(http_requests)
@@ -111,13 +109,13 @@ MAX_CONCURRENCY.times do |thread_id|
       station = queue.pop
       r = request_station(station, logger, thread_id)
 
-      
+
       res = r.run
 
       http_requests.increment
       response_codes.increment(labels: {code: res.response_code})
-      response_size.observe(res.body.size/1000, labels: {station: station})
-      response_time.observe(res.total_time, labels: {station: station})
+      response_size.observe(res.body.size/1000)
+      response_time.observe(res.total_time)
 
       wait_time = ((( 60.0 * MAX_CONCURRENCY ) / stations.size) - res.total_time)
 
