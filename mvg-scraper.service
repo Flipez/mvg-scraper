@@ -1,0 +1,10 @@
+[Unit]
+Description=MVG Subway Scraper
+
+[Service]
+WorkingDirectory=/srv/mvg-scraper
+Type=simple
+ExecStart=puma
+
+[Install]
+WantedBy=multi-user.target

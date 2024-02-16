@@ -4,6 +4,11 @@ GEM
     ethon (0.16.0)
       ffi (>= 1.15.0)
     ffi (1.16.3)
+    nio4r (2.7.0)
+    prometheus-client (4.2.2)
+    puma (6.4.2)
+      nio4r (~> 2.0)
+    rack (3.0.9)
     typhoeus (1.4.1)
       ethon (>= 0.9.0)
 
@@ -11,6 +16,9 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  prometheus-client (~> 4.2)
+  puma (~> 6.4)
+  rack (~> 3.0)
   typhoeus (~> 1.4)
 
 BUNDLED WITH

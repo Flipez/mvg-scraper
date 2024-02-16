@@ -4,6 +4,35 @@ require 'typhoeus'
 require 'json'
 require 'logger'
 
+require 'prometheus/client'
+
+prometheus = Prometheus::Client.registry
+
+http_requests = Prometheus::Client::Counter.new(
+  :http_requests,
+  docstring: 'number of mvg scaper requests'
+)
+response_codes = Prometheus::Client::Counter.new(
+  :response_codes,
+  docstring: 'number of response codes',
+  labels: [:code]
+)
+response_size = Prometheus::Client::Histogram.new(
+  :response_size,
+  docstring: 'size of responses',
+  labels: [:station],
+)
+response_time = Prometheus::Client::Histogram.new(
+  :response_time,
+  docstring: 'time of responses',
+  labels: [:station]
+)
+
+prometheus.register(http_requests)
+prometheus.register(response_codes)
+prometheus.register(response_size)
+prometheus.register(response_time)
+
 Encoding.default_external = Encoding::UTF_8
 Ethon.logger = Logger.new(nil)
 logger = Logger.new(STDOUT)
@@ -13,57 +42,87 @@ end
 
 DEPARTURE_URL = "https://www.mvg.de/api/fib/v2/departure"
 
+DATA_DIR        = ENV['MVG_DATA_DIR']      || './data'
+MAX_CONCURRENCY = ENV['MVG_CONCURRENCY']   || 2
+SAMPLE_SIZE     = ENV['MVG_STATION_RANGE'] || 0
+
 stations = File.readlines('scape_stations.txt', chomp: true)
 
-now = DateTime.now()
-today = now.strftime("%Y%m%d")
-minutes = now.hour * 60 + now.minute
 
-FileUtils.mkdir_p "./data/#{today}"
+def request_station(station, logger, thread_id)
+  now = DateTime.now()
+  today = now.strftime("%Y%m%d")
+  timestamp = now.strftime("%s")
 
-hydra = Typhoeus::Hydra.new(max_concurrency: 2)
-
-# TODO: remove
-stations = stations.shuffle[0..1]
-
-stations.each do |station|
-  folder = "./data/#{today}/#{station}/"
+  FileUtils.mkdir_p "#{DATA_DIR}/#{today}"
+  folder = "#{DATA_DIR}/#{today}/#{station}/"
   FileUtils.mkdir_p folder
 
-  request = Typhoeus::Request.new(
-    DEPARTURE_URL,
-    #headers: {"User-Agent": "rmueller/thesis-scaper"},
-    params: { globalId: station })
+  params = { globalId: station }
+  headers = {"User-Agent": "rmueller/thesis"}
+
+  request = Typhoeus::Request.new(DEPARTURE_URL, headers: headers, params: params)
 
   request.on_complete do |res|
-    logger.info({code: res.code, length: res.body.size, station: station, total_time: res.total_time })
-    if res.success?
-      json = {
-        appconnect_time:    res.appconnect_time,
-        connect_time:       res.connect_time,
-        headers:            res.headers,
-        httpauth_avail:     res.httpauth_avail,
-        namelookup_time:    res.namelookup_time,
-        pretransfer_time:   res.pretransfer_time,
-        primary_ip:         res.primary_ip,
-        redirect_count:     res.redirect_count,
-        redirect_url:       res.redirect_url,
-        request_size:       res.request_size,
-        response_code:      res.response_code,
-        return_code:        res.return_code,
-        return_message:     res.return_message,
-        size_download:      res.size_download,
-        size_upload:        res.size_upload,
-        starttransfer_time: res.starttransfer_time,
-        total_time:         res.total_time,
-        body:               JSON.parse(res.body),
-      }
-      File.write("#{folder}#{minutes}.json", JSON.pretty_generate(json))
-    end
+    logger.info({thread: thread_id, code: res.code, length: res.body.size, station: station, total_time: res.total_time })
+    json = {
+      appconnect_time:    res.appconnect_time,
+      connect_time:       res.connect_time,
+      headers:            res.headers,
+      httpauth_avail:     res.httpauth_avail,
+      namelookup_time:    res.namelookup_time,
+      pretransfer_time:   res.pretransfer_time,
+      primary_ip:         res.primary_ip,
+      redirect_count:     res.redirect_count,
+      redirect_url:       res.redirect_url,
+      request_params:     params,
+      request_header:     headers,
+      request_size:       res.request_size,
+      request_url:        DEPARTURE_URL,
+      response_code:      res.response_code,
+      return_code:        res.return_code,
+      return_message:     res.return_message,
+      size_download:      res.size_download,
+      size_upload:        res.size_upload,
+      starttransfer_time: res.starttransfer_time,
+      total_time:         res.total_time
+    }
+    File.write("#{folder}#{timestamp}_meta.json", JSON.pretty_generate(json))
+    File.write("#{folder}#{timestamp}_body.json", res.body)
   end
 
-  hydra.queue request
+  request
 end
 
-hydra.run
-hydra.run
+queue = Queue.new
+
+stations = stations[0..SAMPLE_SIZE.to_i]
+stations.each do |station|
+  queue << station
+end
+
+threads = []
+
+p "spinning up #{MAX_CONCURRENCY} threads"
+MAX_CONCURRENCY.times do |thread_id|
+  threads << Thread.new do
+    loop do
+      station = queue.pop
+      r = request_station(station, logger, thread_id)
+      res = r.run
+
+      http_requests.increment
+      response_codes.increment(labels: {code: res.response_code})
+      response_size.observe(res.body.size/1000, labels: {station: station})
+      response_time.observe(res.total_time, labels: {station: station})
+
+      wait_time = ((( 60*MAX_CONCURRENCY ) / stations.size) - res.total_time)
+
+      p "thread #{thread_id} request took #{res.total_time} for station #{station}, wait #{wait_time}"
+      sleep([wait_time, 0].max)
+      queue << station
+    end
+  end
+end
+
+#threads.each(&:join)

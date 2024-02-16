@@ -7,3 +7,9 @@ git_source(:github) { |repo_name| "https://github.com/#{repo_name}" }
 # gem "rails"
 
 gem "typhoeus", "~> 1.4"
+
+gem "prometheus-client", "~> 4.2"
+
+gem "rack", "~> 3.0"
+
+gem "puma", "~> 6.4"
