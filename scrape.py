@@ -34,7 +34,7 @@ async def get(station, session):
 
             folder = "./data/{}/{}/".format(today,station)
             Path(folder).mkdir(parents=True, exist_ok=True)
-            
+
             with open('{}{}.json'.format(folder, minutes), 'w') as file:
               r = requests.get(DEPARTURE_URL, params = {'globalId': station})
               file.write(r.text)
