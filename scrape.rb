@@ -25,7 +25,8 @@ response_size = Prometheus::Client::Histogram.new(
 response_time = Prometheus::Client::Histogram.new(
   :response_time,
   docstring: 'time of responses',
-  labels: [:station]
+  labels: [:station],
+  buckets: Prometheus::Client::Histogram.exponential_buckets(start: 0.1, factor: 1.16, count: 20)
 )
 
 prometheus.register(http_requests)
