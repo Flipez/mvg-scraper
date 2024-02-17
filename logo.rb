@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 def logo(thread_count, station_count)
   %(
                     ****                  *******      *******   ******     ********        ********

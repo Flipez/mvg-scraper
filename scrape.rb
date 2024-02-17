@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'date'
 require 'fileutils'
 require 'typhoeus'
@@ -36,9 +38,9 @@ prometheus.register(response_time)
 
 Encoding.default_external = Encoding::UTF_8
 Ethon.logger = Logger.new(nil)
-logger = Logger.new(STDOUT)
+logger = Logger.new($stdout)
 logger.formatter = proc do |_severity, datetime, _progname, msg|
-  JSON.dump(timestamp: "#{datetime}", message: msg) + "\n"
+  "#{JSON.dump(timestamp: datetime.to_s, message: msg)}\n"
 end
 
 DEPARTURE_URL = 'https://www.mvg.de/api/fib/v2/departure'

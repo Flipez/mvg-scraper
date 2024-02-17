@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require 'zstds'
 require 'minitar'
 require 'json'
