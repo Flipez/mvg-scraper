@@ -3,8 +3,9 @@ require 'fileutils'
 require 'typhoeus'
 require 'json'
 require 'logger'
-
 require 'prometheus/client'
+
+require './logo'
 
 prometheus = Prometheus::Client.registry
 
@@ -103,7 +104,8 @@ end
 
 threads = []
 
-p "spinning up #{MAX_CONCURRENCY} threads"
+puts logo(MAX_CONCURRENCY, stations.size)
+
 MAX_CONCURRENCY.times do |thread_id|
   threads << Thread.new do
     loop do
@@ -126,5 +128,3 @@ MAX_CONCURRENCY.times do |thread_id|
     end
   end
 end
-
-#threads.each(&:join)
