@@ -20,6 +20,7 @@ response_codes = Prometheus::Client::Counter.new(
 response_size = Prometheus::Client::Histogram.new(
   :response_size,
   docstring: 'size of responses',
+  buckets: Prometheus::Client::Histogram.exponential_buckets(start: 0.1, factor: 1.2, count: 30)
 )
 response_time = Prometheus::Client::Histogram.new(
   :response_time,
