@@ -16,12 +16,10 @@ station_ids = []
 stations.each do |station|
   ###
   # Include only stations that serve the subway and are located in Munich (including 'Garching b. München')
-  if station["products"].include?('UBAHN') && station['place'].include?('München')
-    station_ids << station['id']
-  end
+  station_ids << station['id'] if station['products'].include?('UBAHN') && station['place'].include?('München')
 end
 
 ###
 # Write file to use by the scraper as source for stations to scrape
 # If no subway station suddenly appears this should be 96 stations
-File.write("scrape_stations.txt", station_ids.join("\n"))
+File.write('scrape_stations.txt', station_ids.join("\n"))
