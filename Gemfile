@@ -17,5 +17,3 @@ gem 'puma', '~> 6.4'
 gem 'ruby-zstds', '~> 1.3'
 
 gem 'minitar', '~> 0.9'
-
-gem 'rubocop', require: false
