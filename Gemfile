@@ -13,3 +13,7 @@ gem "prometheus-client", "~> 4.2"
 gem "rack", "~> 3.0"
 
 gem "puma", "~> 6.4"
+
+gem "ruby-zstds", "~> 1.3"
+
+gem "minitar", "~> 0.9"
