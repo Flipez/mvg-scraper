@@ -46,7 +46,7 @@ DATA_DIR        = ENV['MVG_DATA_DIR']      || './data'
 MAX_CONCURRENCY = ENV['MVG_CONCURRENCY']   || 2
 SAMPLE_SIZE     = ENV['MVG_STATION_RANGE'] || 0
 
-stations = File.readlines('scape_stations.txt', chomp: true)
+stations = File.readlines('scrape_stations.txt', chomp: true)
 
 
 def request_station(station, logger, thread_id)
