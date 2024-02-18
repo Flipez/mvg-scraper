@@ -34,7 +34,7 @@ module MVG
       @queue   = Queue.new
     end
 
-    def request_station(station, logger, thread_id)
+    def request_station(station)
       now = DateTime.now
       today = now.strftime('%Y%m%d')
       timestamp = now.strftime('%s')
@@ -49,8 +49,6 @@ module MVG
       request = Typhoeus::Request.new(departure_url, headers: headers, params: params)
 
       request.on_complete do |res|
-        logger.info({ thread: thread_id, code: res.code, length: res.body.size, station: station,
-                      total_time: res.total_time })
         json = {
           appconnect_time: res.appconnect_time,
           connect_time: res.connect_time,
@@ -94,7 +92,7 @@ module MVG
         threads << Thread.new do
           loop do
             station = queue.pop
-            r = request_station(station, logger, thread_id)
+            r = request_station(station)
 
             res = r.run
 
@@ -105,7 +103,9 @@ module MVG
 
             wait_time = (((60.0 * max_concurrency) / stations.size) - res.total_time)
 
-            p "thread #{thread_id} request took #{res.total_time} for station #{station}, wait #{wait_time}"
+            logger.info({ thread: thread_id, code: res.code, length: res.body.size, station: station,
+                          total_time: res.total_time, wait_time: wait_time })
+
             sleep([wait_time, 0].max)
             queue << station
           end
