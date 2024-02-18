@@ -2,3 +2,4 @@ data/*
 vendor/*
 .bundle/
 *.zst
+*.db
