@@ -1,3 +1,5 @@
+#!/bin/bash
+
 yesterday=$(date -d '-1 day' "+%Y%m%d")
 
 tar --zstd -cf $yesterday.tar.zst $yesterday/
