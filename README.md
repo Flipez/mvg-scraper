@@ -1,4 +1,5 @@
-# mvg
+![](misc/logo.png)
+# mvg-observatory
 This is a private project developed for the purpose of a academic thesis with explicit premission from SWM.
 
 ## Usage restrictions from the SWM/MVG Imprint do apply to all users
