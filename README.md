@@ -1,4 +1,4 @@
-![](misc/logo.png)
+![](public/logo.png)
 # mvg-observatory
 This is a private project developed for the purpose of a academic thesis with explicit premission from SWM.
 
