@@ -10,6 +10,12 @@ module MVG
       puts("MVG Scraper version #{MVG::VERSION}")
     end
 
+    desc 'request-count', 'displays requests per station'
+    def request_count(file)
+      updater = MVG::StreamingAnalyser.new(file)
+      updater.requests_per_station
+    end
+
     desc 'update-stations', 'updates to local station file'
     def update_stations
       updater = MVG::StationUpdater.new
