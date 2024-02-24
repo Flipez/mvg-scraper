@@ -32,5 +32,6 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'rack', '~> 3.0'
   spec.add_dependency 'ruby-zstds', '~> 1.3'
   spec.add_dependency 'thor'
+  spec.add_dependency 'sqlite3'
   spec.add_dependency 'typhoeus', '~> 1.4'
 end
