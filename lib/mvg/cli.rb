@@ -16,9 +16,9 @@ module MVG
       updater.update!
     end
 
-    desc 'export FILE', 'exports the given compressed file into sqlite'
-    def export(file)
-      analyser = MVG::StreamingAnalyser.new(file)
+    desc 'export FILES', 'exports the given compressed file into sqlite'
+    def export(*files)
+      analyser = MVG::StreamingAnalyser.new(files)
       analyser.sqlite_export
     end
   end

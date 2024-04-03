@@ -17,6 +17,7 @@ GEM
     ethon (0.16.0)
       ffi (>= 1.15.0)
     ffi (1.16.3)
+    mini_portile2 (2.8.5)
     minitar (0.9)
     nio4r (2.7.0)
     prometheus-client (4.2.2)
@@ -25,6 +26,8 @@ GEM
     rack (3.0.9)
     ruby-zstds (1.3.1)
       adsp (~> 1.0)
+    sqlite3 (1.7.2)
+      mini_portile2 (~> 2.8.0)
     thor (1.3.0)
     typhoeus (1.4.1)
       ethon (>= 0.9.0)
@@ -34,6 +37,7 @@ PLATFORMS
 
 DEPENDENCIES
   mvg!
+  sqlite3 (~> 1.7)
 
 BUNDLED WITH
    2.2.22
