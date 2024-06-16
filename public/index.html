@@ -22,15 +22,135 @@
         <h1>MVG Observatory</h1>
         <p>A toolset to observe the MVG subways</p>
       </hgroup>
+      <a href="https://grafana.mvg.auch.cool/public-dashboards/9706492223f6409788cc77d17c1faed7"><button>Grafana</button></a>
+      <a href="https://data.mvg.auch.cool"><button>Data</button></a>
+      <a href="https://github.com/flipez/mvg-analyser"><button>GitHub | MVG Analyser</button></a>
+      <span data-tooltip="Not yet publicly released"><button disabled>GitHub | MVG Scraper</button></span>
     </header>
     <!-- ./ Header -->
 
     <!-- Main -->
     <main class="container">
-      <a href="https://grafana.mvg.auch.cool/public-dashboards/9706492223f6409788cc77d17c1faed7"><button>Grafana</button></a>
-      <a href="https://github.com/flipez/mvg-observatory"><button>GitHub</button></a>
-      <a href="https://data.mvg.auch.cool"><button>Data</button></a>
+      <p>
+        <h2>Datasource</h2>
+        The data that is located at <a href="https://data.mvg.auch.cool">data.mvg.auch.cool</a> is sourced from an API endpoint from MVG.
+        It contains departures from all Munich Subwaystations.
+        These stations are scraped once a minute and all available departures for that station are stored.
+        If a request to that API is not sucessfull (eg. an error is received or the request timed out) no retry is made.
+        The scraper has an request limit of $number-subway-stations requests per minute.
+        This ensures the API is not overloaded in case it already struggles to serve requests for other reasons.
+      </p>
+      <p>
+        <h2>Structure of the data</h2>
+        Each morning at 4AM CE(S)T an archive is created that contains all the request and response data of the previous day.
+        That archive is created using <i>tar</i> and is compressed with <a href="https://github.com/facebook/zstd">zstandard</a>.
+        Each archive contains a root folder in the format of <ins>YYYYMMDD</ins> which contains a subfolder for each station with the station ID as the folder name.
+        Each station then contains the data of all the requests made on that day for that station - each file starting with the unix timestamp of the request followed by either <ins>_body.json</ins> or <ins>_meta.json</ins>
+        <p>
+          <pre>
+
+            20240615/
+            ├── de:09162:1
+            │   ├── 1718409659_body.json
+            │   ├── 1718409659_meta.json
+          </pre>
+        </p>
+        The <ins>*_meta.json</ins> files contain all the metadata of the request.
+        See the following file as example:
+        <p>
+          <pre>
+
+            {
+              "appconnect_time": 5.9e-05,
+              "connect_time": 5.9e-05,
+              "headers": {
+                "date": "Sat, 15 Jun 2024 00:00:59 GMT",
+                "x-frame-options": "SAMEORIGIN",
+                "strict-transport-security": "max-age=31536000",
+                "pragma": "no-cache",
+                "cache-control": "no-cache, no-store, max-age=0, must-revalidate",
+                "expires": "0",
+                "content-type": "application/json;charset=UTF-8",
+                "server": "SWM Webserver",
+                "set-cookie": "REDACTED"
+              },
+              "httpauth_avail": 0,
+              "namelookup_time": 5.9e-05,
+              "pretransfer_time": 0.00018,
+              "primary_ip": "REDACTED",
+              "redirect_count": 0,
+              "redirect_url": null,
+              "request_params": {
+                "globalId": "de:09162:1"
+              },
+              "request_header": {
+                "User-Agent": "REDACTED"
+              },
+              "request_size": 181,
+              "request_url": "REDACTED",
+              "response_code": 200,
+              "return_code": "ok",
+              "return_message": "No error",
+              "size_download": 10905.0,
+              "size_upload": 0.0,
+              "starttransfer_time": 0.910849,
+              "total_time": 0.91127
+            }
+          </pre>
+        </p>
+
+        The <ins>*_body.json</ins> file contains the <i>raw, unprocessed</i> response for the request.
+        This means it could either be the expected JSON response (as detailed below) or a simple plain text error from the webserver.
+        The status code in the <ins>_meta.json</ins> file should indicate what to expect (if a connection was established).
+
+        <p>
+          <pre>
+
+            [
+              {
+                "plannedDepartureTime": 1718409600000,
+                "realtime": false,
+                "realtimeDepartureTime": 1718409600000,
+                "transportType": "BUS",
+                "label": "N40",
+                "divaId": "33N40",
+                "network": "swm",
+                "trainType": "",
+                "destination": "Klinikum Großhadern",
+                "cancelled": false,
+                "sev": false,
+                "stopPositionNumber": 8,
+                "messages": [],
+                "bannerHash": "",
+                "occupancy": "LOW",
+                "stopPointGlobalId": "de:09162:1:7:7"
+              },
+              {
+                "plannedDepartureTime": 1718409660000,
+                "realtime": true,
+                "delayInMinutes": 0,
+                "realtimeDepartureTime": 1718409660000,
+                "transportType": "BUS",
+                "label": "N40",
+                "divaId": "33N40",
+                "network": "swm",
+                "trainType": "",
+                "destination": "Kieferngarten",
+                "cancelled": false,
+                "sev": false,
+                "stopPositionNumber": 9,
+                "messages": [],
+                "bannerHash": "",
+                "occupancy": "LOW",
+                "stopPointGlobalId": "de:09162:1:6:6"
+              },
+              ...
+          </pre>
+        </p>
+      </p>
+
+      The documentation is work in progress and will be extended in the future.
+
     </main>
-    <!-- ./ Main -->
   </body>
 </html>
