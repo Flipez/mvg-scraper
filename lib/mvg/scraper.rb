@@ -15,7 +15,7 @@ module MVG
   class Scraper
     attr_accessor :threads
     attr_reader :departure_url, :data_dir, :logger, :metrics, :max_concurrency, :sample_size, :stations_file,
-                :stations, :queue, :user_agent
+                :stations, :queue, :user_agent, :interval
 
     def initialize
       @departure_url = 'https://www.mvg.de/api/fib/v2/departure'
@@ -25,6 +25,7 @@ module MVG
 
       @data_dir        = ENV['MVG_DATA_DIR']      || './data'
       @max_concurrency = ENV['MVG_CONCURRENCY']   || 2
+      @interval        = ENV['MVG_INTERVAL']      || 60.0
 
       @sample_size     = ENV['MVG_STATION_RANGE'] || 0
       @stations_file   = ENV['MVG_STATIONS_FILE'] || 'scrape_stations.txt'
@@ -103,7 +104,7 @@ module MVG
             metrics.response_size.observe(res.body.size / 1000)
             metrics.response_time.observe(res.total_time)
 
-            wait_time = (((60.0 * max_concurrency) / stations.size) - res.total_time)
+            wait_time = (((interval.to_f * max_concurrency) / stations.size) - res.total_time)
 
             logger.info({ thread: thread_id, code: res.code, length: res.body.size, station: station,
                           total_time: res.total_time, wait_time: wait_time })
