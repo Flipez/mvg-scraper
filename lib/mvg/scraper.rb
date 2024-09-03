@@ -15,7 +15,7 @@ module MVG
   class Scraper
     attr_accessor :threads
     attr_reader :departure_url, :data_dir, :logger, :metrics, :max_concurrency, :sample_size, :stations_file,
-                :stations, :queue
+                :stations, :queue, :user_agent
 
     def initialize
       @departure_url = 'https://www.mvg.de/api/fib/v2/departure'
@@ -29,6 +29,8 @@ module MVG
       @sample_size     = ENV['MVG_STATION_RANGE'] || 0
       @stations_file   = ENV['MVG_STATIONS_FILE'] || 'scrape_stations.txt'
       @stations = File.readlines(stations_file, chomp: true)[0..sample_size.to_i]
+
+      @user_agent = ENV['MVG_USER_AGENT']
 
       @threads = []
       @queue   = Queue.new
@@ -44,7 +46,7 @@ module MVG
       FileUtils.mkdir_p folder
 
       params = { globalId: station }
-      headers = { "User-Agent": 'rmueller/thesis' }
+      headers = user_agent ? { "User-Agent": user_agent } : {}
 
       request = Typhoeus::Request.new(departure_url, headers: headers, params: params)
 

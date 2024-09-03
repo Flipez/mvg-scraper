@@ -4,6 +4,7 @@ Description=MVG Subway Scraper
 [Service]
 WorkingDirectory=/srv/mvg-scraper
 Environment=MVG_STATION_RANGE=-1
+Environment=MVG_USER_AGENT=rmuller/thesis
 Type=simple
 ExecStart=puma
 Restart=always
