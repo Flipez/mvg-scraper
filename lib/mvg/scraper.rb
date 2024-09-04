@@ -15,10 +15,12 @@ module MVG
   class Scraper
     attr_accessor :threads
     attr_reader :departure_url, :data_dir, :logger, :metrics, :max_concurrency, :sample_size, :stations_file,
-                :stations, :queue, :user_agent, :interval
+                :stations, :queue, :user_agent, :interval, :messages_url_mvg, :messages_url_sbahn
 
     def initialize
-      @departure_url = 'https://www.mvg.de/api/fib/v2/departure'
+      @departure_url      = 'https://www.mvg.de/api/fib/v2/departure'
+      @messages_url_mvg   = 'https://www.mvg.de/api/fib/v3/message'
+      @messages_url_sbahn = 'https://www.s-bahn-muenchen.de/.rest/verkehrsmeldungen'
 
       @logger = MVG::Logging.new.logger
       @metrics = MVG::Metrics.new
@@ -35,6 +37,84 @@ module MVG
 
       @threads = []
       @queue   = Queue.new
+    end
+
+    def request_messages_sbahn
+      now = DateTime.now
+      today = now.strftime('%Y%m%d')
+      timestamp = now.strftime('%s')
+
+      folder = "#{data_dir}/messages/sbahn/#{today}/"
+      FileUtils.mkdir_p folder
+
+      params = { path: '/aktuell', filter: false, channel: 'REGIONAL', prop: 'REGIONAL', states: 'BY', authors: 'S_BAHN_MUC' }
+      request = Typhoeus::Request.new(messages_url_sbahn, params: params)
+
+      request.on_complete do |res|
+        json = {
+          appconnect_time: res.appconnect_time,
+          connect_time: res.connect_time,
+          headers: res.headers,
+          httpauth_avail: res.httpauth_avail,
+          namelookup_time: res.namelookup_time,
+          pretransfer_time: res.pretransfer_time,
+          primary_ip: res.primary_ip,
+          redirect_count: res.redirect_count,
+          redirect_url: res.redirect_url,
+          request_size: res.request_size,
+          request_params: params,
+          request_url: messages_url_sbahn,
+          response_code: res.response_code,
+          return_code: res.return_code,
+          return_message: res.return_message,
+          size_download: res.size_download,
+          size_upload: res.size_upload,
+          starttransfer_time: res.starttransfer_time,
+          total_time: res.total_time
+        }
+        File.write("#{folder}#{timestamp}_meta.json", JSON.pretty_generate(json))
+        File.write("#{folder}#{timestamp}_body.json", res.body)
+      end
+
+      request
+    end
+
+    def request_messages_mvg
+      now = DateTime.now
+      today = now.strftime('%Y%m%d')
+      timestamp = now.strftime('%s')
+
+      folder = "#{data_dir}/messages/mvg/#{today}/"
+      FileUtils.mkdir_p folder
+
+      request = Typhoeus::Request.new(messages_url_mvg)
+
+      request.on_complete do |res|
+        json = {
+          appconnect_time: res.appconnect_time,
+          connect_time: res.connect_time,
+          headers: res.headers,
+          httpauth_avail: res.httpauth_avail,
+          namelookup_time: res.namelookup_time,
+          pretransfer_time: res.pretransfer_time,
+          primary_ip: res.primary_ip,
+          redirect_count: res.redirect_count,
+          redirect_url: res.redirect_url,
+          request_size: res.request_size,
+          request_url: messages_url_mvg,
+          response_code: res.response_code,
+          return_code: res.return_code,
+          return_message: res.return_message,
+          size_download: res.size_download,
+          size_upload: res.size_upload,
+          starttransfer_time: res.starttransfer_time,
+          total_time: res.total_time
+        }
+        File.write("#{folder}#{timestamp}_meta.json", JSON.pretty_generate(json))
+        File.write("#{folder}#{timestamp}_body.json", res.body)
+      end
+
+      request
     end
 
     def request_station(station)
@@ -112,6 +192,14 @@ module MVG
             sleep([wait_time, 0].max)
             queue << station
           end
+        end
+      end
+
+      threads << Thread.new do
+        loop do
+          request_messages_mvg.run
+          request_messages_sbahn.run
+          sleep(60 * 60) # Request once per hour
         end
       end
     end
