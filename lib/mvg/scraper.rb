@@ -18,7 +18,7 @@ module MVG
                 :stations, :queue, :user_agent, :interval, :messages_url_mvg, :messages_url_sbahn
 
     def initialize
-      @departure_url      = 'https://www.mvg.de/api/fib/v2/departure'
+      @departure_url      = 'https://www.mvg.de/api/bgw-pt/v3/departures'
       @messages_url_mvg   = 'https://www.mvg.de/api/fib/v3/message'
       @messages_url_sbahn = 'https://www.s-bahn-muenchen.de/.rest/verkehrsmeldungen'
 
