@@ -26,12 +26,9 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'minitar', '~> 0.9'
   spec.add_dependency 'prometheus-client', '~> 4.2'
   spec.add_dependency 'puma', '~> 6.4'
   spec.add_dependency 'rack', '~> 3.0'
-  spec.add_dependency 'ruby-zstds', '~> 1.3'
   spec.add_dependency 'thor'
-  spec.add_dependency 'sqlite3'
   spec.add_dependency 'typhoeus', '~> 1.4'
 end

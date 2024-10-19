@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require_relative 'mvg/scraper'
-require_relative 'mvg/streaming_analyser'
 require_relative 'mvg/version'
 
 ###

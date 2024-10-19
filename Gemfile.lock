@@ -2,33 +2,23 @@ PATH
   remote: .
   specs:
     mvg (0.1.0)
-      minitar (~> 0.9)
       prometheus-client (~> 4.2)
       puma (~> 6.4)
       rack (~> 3.0)
-      ruby-zstds (~> 1.3)
-      sqlite3
       thor
       typhoeus (~> 1.4)
 
 GEM
   remote: https://rubygems.org/
   specs:
-    adsp (1.0.10)
     ethon (0.16.0)
       ffi (>= 1.15.0)
     ffi (1.16.3)
-    mini_portile2 (2.8.5)
-    minitar (0.9)
     nio4r (2.7.0)
     prometheus-client (4.2.2)
     puma (6.4.2)
       nio4r (~> 2.0)
     rack (3.0.9)
-    ruby-zstds (1.3.1)
-      adsp (~> 1.0)
-    sqlite3 (1.7.2)
-      mini_portile2 (~> 2.8.0)
     thor (1.3.0)
     typhoeus (1.4.1)
       ethon (>= 0.9.0)
