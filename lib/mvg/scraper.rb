@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require 'date'
+require 'redis'
 require 'fileutils'
 require 'typhoeus'
 require 'json'
@@ -14,7 +15,7 @@ module MVG
   # Provides the main scraper which handles the request and scheduling
   class Scraper
     attr_accessor :threads
-    attr_reader :departure_url, :data_dir, :logger, :metrics, :max_concurrency, :sample_size, :stations_file,
+    attr_reader :departure_url, :data_dir, :logger, :metrics, :max_concurrency, :redis, :sample_size, :stations_file,
                 :stations, :queue, :user_agent, :interval, :messages_url_mvg, :messages_url_sbahn
 
     def initialize
@@ -37,6 +38,8 @@ module MVG
 
       @threads = []
       @queue   = Queue.new
+
+      @redis = Redis.new
     end
 
     def request_messages_sbahn
@@ -167,6 +170,12 @@ module MVG
       end
     end
 
+    def export_redis(station, response)
+      redis.set("mvg_#{station}", response)
+    rescue StandardError => e
+      logger.warn("Unable to push event to redis: #{e.message}")
+    end
+
     def run
       prefill_queue
       MVG::Logo.print(max_concurrency, stations.size)
@@ -183,6 +192,8 @@ module MVG
             metrics.response_codes.increment(labels: { code: res.response_code })
             metrics.response_size.observe(res.body.size / 1000)
             metrics.response_time.observe(res.total_time)
+
+            export_redis(station, res.body)
 
             wait_time = (((interval.to_f * max_concurrency) / stations.size) - res.total_time)
 
