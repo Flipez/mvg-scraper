@@ -9,7 +9,7 @@ module MVG
   class StationUpdater
     attr_reader :stations_url, :stations_file
 
-    def intitialize
+    def initialize
       @stations_url  = 'https://www.mvg.de/.rest/zdm/stations'
       @stations_file = ENV['MVG_STATIONS_FILE'] || 'scrape_stations.txt'
     end
@@ -24,12 +24,10 @@ module MVG
       File.write('stations.json', response.body)
 
       stations = JSON.parse(response.body)
-      station_ids = []
-
-      stations.each do |station|
-        ###
-        # Include only stations that serve the subway and are located in Munich (including 'Garching b. München')
-        station_ids << station['id'] if station['products'].include?('UBAHN') && station['place'].include?('München')
+      station_ids = stations.filter_map do |station|
+        station['id'] if station['id'].start_with?('de') &&
+             !station['tariffZones'].empty? &&
+             station['products'].any? { |product| %w[UBAHN TRAM SBAHN].include?(product) }
       end
 
       ###
