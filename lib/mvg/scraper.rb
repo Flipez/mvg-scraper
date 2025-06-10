@@ -26,9 +26,9 @@ module MVG
       @logger = MVG::Logging.new.logger
       @metrics = MVG::Metrics.new
 
-      @data_dir        = ENV['MVG_DATA_DIR']      || './data'
-      @max_concurrency = ENV['MVG_CONCURRENCY'].to_i
-      @interval        = ENV['MVG_INTERVAL']      || 300.0
+      @data_dir        = ENV['MVG_DATA_DIR']          || './data'
+      @max_concurrency = ENV['MVG_CONCURRENCY']&.to_i || 1
+      @interval        = ENV['MVG_INTERVAL']          || 300.0
 
       @sample_size     = ENV['MVG_STATION_RANGE'] || 0
       @stations_file   = ENV['MVG_STATIONS_FILE'] || 'scrape_stations.txt'
