@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  mvg-scraper:
+    build: .
+    ports:
+      - "9292:9292"
+    environment:
+      - MVG_STATION_RANGE=-1
+      - MVG_INTERVAL=360
+      - MVG_CONCURRENCY=1
+      - MVG_USER_AGENT=Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:139.0) Gecko/20100101 Firefox/139.0
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+    restart: always
+    volumes:
+      - ./data:/srv/mvg-scraper/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: always
+    volumes:
+      - redis-data:/data
+
+volumes:
+  redis-data:
