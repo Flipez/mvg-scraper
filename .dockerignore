@@ -1,0 +1,10 @@
+.git
+.gitignore
+.ruby-lsp
+.rubocop.yml
+.rubocop_todo.yml
+README.md
+data
+*.log
+tmp
+.DS_Store

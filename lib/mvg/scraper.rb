@@ -20,7 +20,7 @@ module MVG
 
     def initialize
       @departure_url      = 'https://www.mvg.de/api/bgw-pt/v3/departures'
-      @messages_url_mvg   = 'https://www.mvg.de/api/fib/v3/message'
+      @messages_url_mvg   = 'https://www.mvg.de/api/bgw-pt/v3/messages'
       @messages_url_sbahn = 'https://www.s-bahn-muenchen.de/.rest/verkehrsmeldungen'
 
       @logger = MVG::Logging.new.logger
@@ -50,7 +50,7 @@ module MVG
       folder = "#{data_dir}/messages/sbahn/#{today}/"
       FileUtils.mkdir_p folder
 
-      params = { path: '/aktuell', filter: false, channel: 'REGIONAL', prop: 'REGIONAL', states: 'BY', authors: 'S_BAHN_MUC' }
+      params = { path: '/aktuell/bayern', filter: false, channel: 'REGIONAL', states: 'BY', authors: 'S_BAHN_MUC' }
       request = Typhoeus::Request.new(messages_url_sbahn, params: params)
 
       request.on_complete do |res|
@@ -129,7 +129,7 @@ module MVG
       folder = "#{data_dir}/#{today}/#{station}/"
       FileUtils.mkdir_p folder
 
-      params = { globalId: station, transportTypes: 'UBAHN,TRAM,SBAHN', limit: 100 }
+      params = { globalId: station, transportTypes: 'UBAHN,TRAM,SBAHN', limit: 60 }
       headers = user_agent ? { "User-Agent": user_agent } : {}
 
       request = Typhoeus::Request.new(departure_url, headers: headers, params: params)
@@ -171,7 +171,8 @@ module MVG
     end
 
     def export_redis(station, response)
-      redis.set("mvg_#{station}", response)
+      body = JSON.parse(response)
+      redis.set("mvg_#{station}", response) if body.any?{|e| e["transportType"] == "UBAHN" }
     rescue StandardError => e
       logger.warn("Unable to push event to redis: #{e.message}")
     end
